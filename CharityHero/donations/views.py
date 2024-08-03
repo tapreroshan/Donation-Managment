@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Campaign, Donation, Transaction
-from .serializers import UserSerializer, CampaignSerializer, DonationSerializer, TransactionSerializer
+from .serializers import UserSerializer, CampaignSerializer, DonationSerializer
 
 class RegisterView(APIView):
     def post(self, request):
@@ -48,19 +48,92 @@ class LoginView(generics.GenericAPIView):
             return response
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-class CampaignViewSet(viewsets.ModelViewSet):
-    queryset = Campaign.objects.all()
-    serializer_class = CampaignSerializer
+class CampaignListCreate(APIView):
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def get(self, request):
+        campaigns = Campaign.objects.all()
+        serializer = CampaignSerializer(campaigns, many=True)
+        return Response(serializer.data)
 
-class DonationViewSet(viewsets.ModelViewSet):
-    queryset = Donation.objects.all()
-    serializer_class = DonationSerializer
+    def post(self, request):
+        serializer = CampaignSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CampaignDetail(APIView):
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def get(self, request, pk):
+        try:
+            campaign = Campaign.objects.get(pk=pk)
+        except Campaign.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = CampaignSerializer(campaign)
+        return Response(serializer.data)
 
+    def put(self, request, pk):
+        try:
+            campaign = Campaign.objects.get(pk=pk)
+        except Campaign.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = CampaignSerializer(campaign, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            campaign = Campaign.objects.get(pk=pk)
+        except Campaign.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        campaign.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class DonationListCreate(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        donations = Donation.objects.all()
+        serializer = DonationSerializer(donations, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = DonationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DonationDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            donation = Donation.objects.get(pk=pk)
+        except Donation.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = DonationSerializer(donation)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        try:
+            donation = Donation.objects.get(pk=pk)
+        except Donation.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = DonationSerializer(donation, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            donation = Donation.objects.get(pk=pk)
+        except Donation.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        donation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

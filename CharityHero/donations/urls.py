@@ -1,14 +1,13 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import RegisterView, LoginView, CampaignViewSet, DonationViewSet
-
-router = DefaultRouter()
-router.register(r'campaigns', CampaignViewSet, basename='campaign')
-router.register(r'donations', DonationViewSet, basename='donation')
-# router.register(r'transactions', TransactionViewSet, basename='transaction')
+from django.urls import path
+from .views import RegisterView, LoginView, CampaignListCreate, CampaignDetail, DonationListCreate, DonationDetail
 
 urlpatterns = [
-    path('', include(router.urls)),
     path('register/', RegisterView.as_view(), name='register'),
-    path('login/', LoginView.as_view(), name='login'),
+    # path('login/', LoginView.as_view(), name='login'),
+    
+    path('campaigns/', CampaignListCreate.as_view(), name='campaign-list-create'),
+    path('campaigns/<int:pk>/', CampaignDetail.as_view(), name='campaign-detail'),
+
+    path('donations/', DonationListCreate.as_view(), name='donation-list-create'),
+    path('donations/<int:pk>/', DonationDetail.as_view(), name='donation-detail'),
 ]
